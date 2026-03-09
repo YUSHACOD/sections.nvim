@@ -27,6 +27,10 @@ Example with `lazy.nvim` while developing locally:
         next = "]s",
         prev = "[s",
         ["end"] = "<leader>es",
+        create = "<leader>sc",
+        jump = "<leader>sj",
+        delete = "<leader>sd",
+        telescope = "<leader>ss",
       },
       textobjects = true,
       commands = true,
@@ -100,9 +104,14 @@ In HTML, the same section becomes:
   - `next` (`string`): Mapping for "next section". Default: `]s`.
   - `prev` (`string`): Mapping for "previous section". Default: `[s`.
   - `end` (`string`): Mapping for "jump to section end". Default: `<leader>es`.
+  - `create` (`string`): Mapping for "create section" (`SecCreate` behaviour). Default: `<leader>sc`.
+  - `jump` (`string`): Mapping for "jump to section" (`SecJump` behaviour). Default: `<leader>sj`.
+  - `delete` (`string`): Mapping for "delete section" (`SecDelete` behaviour). Default: `<leader>sd`.
+  - `telescope` (`string`): Mapping for `SecTelescope`. Default: `<leader>ss`.
 - **`textobjects`** (`boolean`): Enable `is` / `as` textobjects. Default: `true`.
 - **`commands`** (`boolean`): Register `:SecCreate`, `:SecJump`, `:SecDelete`. Default: `true`.
 - **`wrap_navigation`** (`boolean`): Reserved for future wrap‑around navigation; currently unused.
+- **`telescope_theme`** (`string|nil`): Name of Telescope theme to use for `SecTelescope` (e.g. `"dropdown"`, `"ivy"`). Default: `"dropdown"`. Set to `nil` to use raw Telescope layout options.
 
 ### Telescope integration
 

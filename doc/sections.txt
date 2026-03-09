@@ -142,10 +142,14 @@ Options (with defaults):
     width         (number)  Target visual width of the full boundary
                             line. Values < 20 are clamped to 100.
 
-    keymaps       (table)   Table of navigation mappings:
-                              next : "]s"
-                              prev : "[s"
-                              end  : "<leader>es"
+    keymaps       (table)   Table of mappings:
+                              next      : "]s"
+                              prev      : "[s"
+                              end       : "<leader>es"
+                              create    : (optional) map to create a section
+                              jump      : (optional) map to jump to a section
+                              delete    : (optional) map to delete a section
+                              telescope : (optional) map for :SecTelescope
 
     textobjects   (bool)    Enable "is" / "as" textobjects.
                             Default: v:true.
@@ -156,6 +160,12 @@ Options (with defaults):
 
     wrap_navigation (bool)  Reserved for future wrap-around behaviour
                             in next/prev navigation. Currently unused.
+
+    telescope_theme (string|nil)
+                          Name of Telescope theme to use for the
+                          |:SecTelescope| picker (for example "dropdown"
+                          or "ivy"). Default: "dropdown". Set to nil to
+                          use Telescope's raw layout opts.
 
 Internals such as |sections.config|, |sections.comment|, |sections.format|
 and |sections.util| are considered private and may change. Rely on the

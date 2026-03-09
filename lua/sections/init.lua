@@ -47,6 +47,51 @@ function M.setup(opts)
         )
     end
 
+    -- command-like helpers (optional keymaps)
+    if config.keymaps and config.keymaps.create then
+        vim.keymap.set(
+            "n",
+            config.keymaps.create,
+            function()
+                nav.create()
+            end,
+            { desc = "Create section" }
+        )
+    end
+
+    if config.keymaps and config.keymaps.jump then
+        vim.keymap.set(
+            "n",
+            config.keymaps.jump,
+            function()
+                nav.jump()
+            end,
+            { desc = "Jump to section" }
+        )
+    end
+
+    if config.keymaps and config.keymaps.delete then
+        vim.keymap.set(
+            "n",
+            config.keymaps.delete,
+            function()
+                nav.delete()
+            end,
+            { desc = "Delete section" }
+        )
+    end
+
+    if config.keymaps and config.keymaps.telescope then
+        vim.keymap.set(
+            "n",
+            config.keymaps.telescope,
+            function()
+                nav.telescope()
+            end,
+            { desc = "Sections Telescope picker" }
+        )
+    end
+
     -- textobjects
     if config.textobjects then
         vim.keymap.set(

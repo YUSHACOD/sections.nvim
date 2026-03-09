@@ -5,11 +5,17 @@ M.defaults = {
   width = 100,
   -- marker text embedded into section boundaries (kept in sync with init.lua)
   marker = "(section)",
+  -- Telescope theme name (e.g. "dropdown", "ivy"); nil for raw layout
+  telescope_theme = "dropdown",
   -- default keymaps (match current behaviour)
   keymaps = {
     next = "]s",
     prev = "[s",
     ["end"] = "<leader>es",
+    create = "<leader>sc",
+    jump = "<leader>sj",
+    delete = "<leader>sd",
+    telescope = "<leader>ss",
   },
   -- whether to register textobjects (is / as)
   textobjects = true,

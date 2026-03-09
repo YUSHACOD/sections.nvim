@@ -53,12 +53,19 @@ end
 ---@return string
 local function core_from_line(line)
 	local parts = comment.parts(0)
-	local left = util.pesc(parts.left)
-	local right = parts.right ~= "" and util.pesc(parts.right) or nil
+	local left_raw = parts.left
+	local right_raw = parts.right ~= "" and parts.right or nil
+
+	local left = util.pesc(left_raw)
+	local right = right_raw and util.pesc(right_raw) or nil
 
 	line = line:gsub("^%s*" .. left .. "%s*", "", 1)
 	if right then
+		-- block comments: strip trailing suffix (e.g. "-->", "*/")
 		line = line:gsub("%s*" .. right .. "%s*$", "", 1)
+	else
+		-- line comments: strip mirrored prefix at the end (e.g. "// ... //")
+		line = line:gsub("%s*" .. left .. "%s*$", "", 1)
 	end
 
 	return util.trim(line)
@@ -134,8 +141,20 @@ function M.telescope()
 	local conf = require("telescope.config").values
 	local actions = require("telescope.actions")
 	local action_state = require("telescope.actions.state")
+	local picker_opts = {}
 
-	pickers.new({}, {
+	-- optional themed layout
+	if config.telescope_theme then
+		local ok_theme, themes = pcall(require, "telescope.themes")
+		if ok_theme then
+			local getter = themes["get_" .. config.telescope_theme]
+			if type(getter) == "function" then
+				picker_opts = getter({})
+			end
+		end
+	end
+
+	pickers.new(picker_opts, {
 		prompt_title = "Sections",
 		finder = finders.new_table({
 			results = sections,
