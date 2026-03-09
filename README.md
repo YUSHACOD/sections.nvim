@@ -55,7 +55,8 @@ require("sections").setup({
 
 - **`SecCreate [name]`**: Create a new section. With no argument, prompts for the name.
 - **`SecJump`**: Fuzzy‑pick a section using `vim.ui.select` and jump to it (no dependencies).
-- **`SecDelete`**: Delete the section under the cursor (full block, including boundaries).
+- **`SecDelete`**: Delete the top‑level section under the cursor (start + end boundaries and all lines in between).
+- **`SecRename`**: Rename the top‑level section that the cursor is currently inside (updates both start/end).
 - **`SecTelescope`**: Open a Telescope picker of all sections and jump to the selected one (requires `nvim-telescope/telescope.nvim`).
 
 ### Keymaps (defaults)
@@ -63,6 +64,11 @@ require("sections").setup({
 - **`]s`**: Jump to next section boundary.
 - **`[s`**: Jump to previous section boundary.
 - **`<leader>es`**: Jump from a section start to its end boundary.
+- **`<leader>sc`**: Create a section at the current line.
+- **`<leader>sj`**: Jump to a section via `SecJump`.
+- **`<leader>sd`**: Delete the section under the cursor via `SecDelete`.
+- **`<leader>sr`**: Rename the enclosing top‑level section via `SecRename`.
+- **`<leader>ss`**: Open the sections Telescope picker via `SecTelescope`.
 - **`is`** (operator‑pending / visual): Inner section (between the two boundaries).
 - **`as`** (operator‑pending / visual): Around section (including boundaries).
 
@@ -72,7 +78,7 @@ All keymaps can be overridden via `keymaps` in `setup`.
 
 The plugin relies on the buffer's `commentstring` to build section boundaries.
 With a C-style line comment (`// %s`) and the default marker `(section)` the
-boundaries look roughly like:
+top‑level boundaries look roughly like:
 
 ```c
 //  Title : -------------------- (section) //
@@ -87,6 +93,10 @@ In HTML, the same section becomes:
   body of the section
 <!--  (section) ------------------ : Title -->
 ```
+
+For nested scopes (indented code), only a single header line is created and
+its width is adjusted based on the current indent so that the overall visual
+width still matches the configured `width`.
 
 ### HTML and block comment behaviour
 
@@ -107,6 +117,7 @@ In HTML, the same section becomes:
   - `create` (`string`): Mapping for "create section" (`SecCreate` behaviour). Default: `<leader>sc`.
   - `jump` (`string`): Mapping for "jump to section" (`SecJump` behaviour). Default: `<leader>sj`.
   - `delete` (`string`): Mapping for "delete section" (`SecDelete` behaviour). Default: `<leader>sd`.
+  - `rename` (`string`): Mapping for "rename section" (`SecRename` behaviour). Default: `<leader>sr`.
   - `telescope` (`string`): Mapping for `SecTelescope`. Default: `<leader>ss`.
 - **`textobjects`** (`boolean`): Enable `is` / `as` textobjects. Default: `true`.
 - **`commands`** (`boolean`): Register `:SecCreate`, `:SecJump`, `:SecDelete`. Default: `true`.

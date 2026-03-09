@@ -23,10 +23,12 @@ end
 ---Build a single section boundary line for the current buffer.
 ---@param desc string
 ---@param line_type string
+---@param indent string
+---@param indent_width integer
 ---@return string
-local function build_line(desc, line_type)
+local function build_line(desc, line_type, indent, indent_width)
 	local parts = comment.parts(0)
-	return format.boundary_line(config, parts, desc, line_type)
+	return format.boundary_line(config, parts, desc, line_type, indent, indent_width)
 end
 
 
@@ -39,13 +41,27 @@ function M.create(desc)
 		end
 	end
 
-	local line1 = build_line(desc, start_type)
-	local line2 = build_line(desc, end_type)
+	local cur = vim.api.nvim_win_get_cursor(0)
+	local line_nr = cur[1]
+	local line = vim.api.nvim_buf_get_lines(0, line_nr - 1, line_nr, false)[1] or ""
+	local indent = line:match("^(%s*)") or ""
+	local indent_width = vim.fn.strdisplaywidth(indent)
 
-	vim.api.nvim_put({ line1 }, "l", true, true)
-	vim.api.nvim_put({ line2 }, "l", true, true)
-	vim.cmd("normal! O")
-	vim.cmd("normal! S")
+	local line1 = build_line(desc, start_type, indent, indent_width)
+	local line2 = build_line(desc, end_type, indent, indent_width)
+
+	-- Top-level sections get a full block (start + end). Nested scopes only
+	-- get a single header line to avoid visual noise.
+	if indent_width > 0 then
+		vim.api.nvim_put({ line1 }, "l", true, true)
+		vim.cmd("normal! o")
+		vim.cmd("normal! S")
+	else
+		vim.api.nvim_put({ line1 }, "l", true, true)
+		vim.api.nvim_put({ line2 }, "l", true, true)
+		vim.cmd("normal! O")
+		vim.cmd("normal! S")
+	end
 end
 
 -- strip comment delimiters so detection is independent of language.
@@ -86,6 +102,19 @@ local function is_section_end(line)
 	return core:match("^%s*" .. marker .. "%s+-+%s:%s*.+%s*$") ~= nil
 end
 
+---Extract human-readable title from a start boundary line.
+---@param line string
+---@return string|nil
+local function extract_title_from_begin(line)
+	local core = core_from_line(line)
+	local marker = util.pesc(config.marker)
+	local title = core:match("^%s*(.-)%s:%s*-+%s+" .. marker .. "%s*$")
+	if not title or title == "" then
+		return nil
+	end
+	return util.trim(title)
+end
+
 
 -- collect sections
 ---Return all section starts in the current buffer.
@@ -99,10 +128,7 @@ local function get_sections()
 	---@param line string
 	---@return string
 	local function section_title(line)
-		local core = core_from_line(line)
-		local marker = util.pesc(config.marker)
-		-- extract "Title" from "Title : ----- (marker)"
-		local title = core:match("^%s*(.-)%s:%s*-+%s+" .. marker .. "%s*$")
+		local title = extract_title_from_begin(line)
 		if not title or title == "" then
 			return util.trim(line)
 		end
@@ -308,6 +334,73 @@ function M.delete()
 
 	-- delete the entire section block, including boundaries
 	vim.api.nvim_buf_set_lines(0, start_line - 1, end_line, false, {})
+end
+
+---Rename the top-level section that the cursor is currently inside.
+---If the cursor is not within any non-indented (full) section block,
+---prints a friendly message and does nothing.
+function M.rename()
+	local cur_line = vim.api.nvim_win_get_cursor(0)[1]
+	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+	if cur_line > #lines then
+		return
+	end
+
+	-- Find the nearest top-level (no-indent) section start at or above the cursor.
+	local start_idx = nil
+	for i = cur_line, 1, -1 do
+		if is_section_begin(lines[i]) then
+			local indent = lines[i]:match("^(%s*)") or ""
+			if vim.fn.strdisplaywidth(indent) == 0 then
+				start_idx = i
+				break
+			end
+		end
+	end
+
+	if not start_idx then
+		util.notify("Not inside any section to rename", vim.log.levels.WARN)
+		return
+	end
+
+	-- Find matching end boundary for this top-level block.
+	local end_idx = nil
+	for i = start_idx + 1, #lines do
+		if is_section_end(lines[i]) then
+			end_idx = i
+			break
+		end
+	end
+
+	-- If there's no end boundary or cursor lies outside the block, treat as "not inside".
+	if not end_idx or cur_line < start_idx or cur_line > end_idx then
+		util.notify("Not inside any section to rename", vim.log.levels.WARN)
+		return
+	end
+
+	local start_line_text = lines[start_idx]
+	local indent = start_line_text:match("^(%s*)") or ""
+
+	local old_title = extract_title_from_begin(start_line_text) or ""
+	local new_title = vim.fn.input("New section name: ", old_title)
+	if new_title == "" or new_title == old_title then
+		return
+	end
+
+	local parts = comment.parts(0)
+	local indent_width = vim.fn.strdisplaywidth(indent)
+
+	-- replace start boundary
+	local new_start = format.boundary_line(config, parts, new_title, start_type, indent, indent_width)
+	vim.api.nvim_buf_set_lines(0, start_idx - 1, start_idx, false, { new_start })
+
+	-- replace matching end boundary (we already know end_idx is valid)
+	local end_line_text = lines[end_idx]
+	local end_indent = end_line_text:match("^(%s*)") or ""
+	local end_indent_width = vim.fn.strdisplaywidth(end_indent)
+	local new_end = format.boundary_line(config, parts, new_title, end_type, end_indent, end_indent_width)
+	vim.api.nvim_buf_set_lines(0, end_idx - 1, end_idx, false, { new_end })
 end
 
 return M

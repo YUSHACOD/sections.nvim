@@ -17,8 +17,9 @@ CONTENTS                                                   *sections-contents*
 1. OVERVIEW                                                      *sections*
 
 sections.nvim creates visual "sections" in your files using language-aware
-comments. Each section is a block delimited by two boundary lines that contain
-the section title and a configurable marker string.
+comments. Each top-level section is a block delimited by two boundary lines
+that contain the section title and a configurable marker string. Nested
+scopes (indented code) can use header-only section lines.
 
 Examples (default marker "(section)"):
 
@@ -49,9 +50,14 @@ With a plugin manager like "lazy.nvim":
           marker = "(section)",
           width  = 100,
           keymaps = {
-            next = "]s",
-            prev = "[s",
-            ["end"] = "<leader>es",
+            next      = "]s",
+            prev      = "[s",
+            ["end"]   = "<leader>es",
+            create    = "<leader>sc",
+            jump      = "<leader>sj",
+            delete    = "<leader>sd",
+            rename    = "<leader>sr",
+            telescope = "<leader>ss",
           },
           textobjects     = true,
           commands        = true,
@@ -81,8 +87,16 @@ and `commands = true` in setup.
                     require any external dependencies.
 
                                                         *:SecDelete*
-:SecDelete          Delete the section around the cursor, including
-                    both boundary lines and all lines in between.
+:SecDelete          Delete the top-level section under the cursor,
+                    including both boundary lines and all lines in
+                    between. Nested header-only sections are left
+                    untouched.
+
+                                                        *:SecRename*
+:SecRename          Rename the top-level section that the cursor is
+                    currently inside. Both start and end boundaries
+                    are updated. If the cursor is not inside any such
+                    section, a message is printed and nothing changes.
 
                                                         *:SecTelescope*
 :SecTelescope       Open a Telescope picker listing all sections in
@@ -97,14 +111,19 @@ By default, |sections.nvim| sets the following normal-mode mappings:
     ]s              Jump to the next section start.
     [s              Jump to the previous section start.
     <leader>es      From a section start, jump to its end boundary.
+    <leader>sc      Create a section at the current line.
+    <leader>sj      Jump to a section via |:SecJump|.
+    <leader>sd      Delete the enclosing top-level section.
+    <leader>sr      Rename the enclosing top-level section.
+    <leader>ss      Open the sections Telescope picker.
 
 Textobjects (operator-pending / visual):
 
     is              "inner section"   (between the two boundaries)
     as              "around section"  (including the boundaries)
 
-All mappings can be disabled or changed by overriding the `keymaps` and
-`textobjects` options in |sections-configuration|.
+All mappings can be changed by overriding the `keymaps` and `textobjects`
+options in |sections-configuration|.
 
 ==============================================================================
 5. TELESCOPE                                         *sections-telescope*
@@ -146,10 +165,11 @@ Options (with defaults):
                               next      : "]s"
                               prev      : "[s"
                               end       : "<leader>es"
-                              create    : (optional) map to create a section
-                              jump      : (optional) map to jump to a section
-                              delete    : (optional) map to delete a section
-                              telescope : (optional) map for :SecTelescope
+                              create    : "<leader>sc"
+                              jump      : "<leader>sj"
+                              delete    : "<leader>sd"
+                              rename    : "<leader>sr"
+                              telescope : "<leader>ss"
 
     textobjects   (bool)    Enable "is" / "as" textobjects.
                             Default: v:true.

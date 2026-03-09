@@ -36,6 +36,16 @@ function M.setup()
 	)
 
 	vim.api.nvim_create_user_command(
+		"SecRename",
+		function()
+			sec.rename()
+		end,
+		{
+			desc = "Rename the section under cursor",
+		}
+	)
+
+	vim.api.nvim_create_user_command(
 		"SecTelescope",
 		function()
 			sec.telescope()

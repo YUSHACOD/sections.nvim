@@ -91,6 +91,17 @@ function M.setup(opts)
 		)
 	end
 
+	if config.keymaps and config.keymaps.rename then
+		vim.keymap.set(
+			"n",
+			config.keymaps.rename,
+			function()
+				nav.rename()
+			end,
+			{ desc = "Rename section" }
+		)
+	end
+
 	-- textobjects
 	if config.textobjects then
 		vim.keymap.set(

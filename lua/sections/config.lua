@@ -15,6 +15,7 @@ M.defaults = {
 		create = "<leader>sc",
 		jump = "<leader>sj",
 		delete = "<leader>sd",
+		rename = "<leader>sr",
 		telescope = "<leader>ss",
 	},
 	-- whether to register textobjects (is / as)
