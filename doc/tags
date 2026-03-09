@@ -1,0 +1,14 @@
+:SecCreate	sections.txt	/*:SecCreate*
+:SecDelete	sections.txt	/*:SecDelete*
+:SecJump	sections.txt	/*:SecJump*
+:SecRename	sections.txt	/*:SecRename*
+:SecTelescope	sections.txt	/*:SecTelescope*
+sections	sections.txt	/*sections*
+sections-commands	sections.txt	/*sections-commands*
+sections-configuration	sections.txt	/*sections-configuration*
+sections-contents	sections.txt	/*sections-contents*
+sections-install	sections.txt	/*sections-install*
+sections-mappings	sections.txt	/*sections-mappings*
+sections-telescope	sections.txt	/*sections-telescope*
+sections-telescope-cmd	sections.txt	/*sections-telescope-cmd*
+sections.txt	sections.txt	/*sections.txt*

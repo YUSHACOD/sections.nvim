@@ -1,6 +1,6 @@
 *sections.txt*      sections.nvim: visual code sections
 
-Author:  you
+Author:  Cursor
 License: MIT
 
 ==============================================================================
