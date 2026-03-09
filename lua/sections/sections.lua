@@ -4,8 +4,8 @@ local util = require("sections.util")
 
 local M = {}
 
-local start_type = "_"
-local end_type = "$"
+local start_type = "start"
+local end_type = "end"
 
 local config = {
 	width = 0,
@@ -48,15 +48,35 @@ function M.create(desc)
 	vim.cmd("normal! S")
 end
 
+-- strip comment delimiters so detection is independent of language.
+---@param line string
+---@return string
+local function core_from_line(line)
+	local parts = comment.parts(0)
+	local left = util.pesc(parts.left)
+	local right = parts.right ~= "" and util.pesc(parts.right) or nil
+
+	line = line:gsub("^%s*" .. left .. "%s*", "", 1)
+	if right then
+		line = line:gsub("%s*" .. right .. "%s*$", "", 1)
+	end
+
+	return util.trim(line)
+end
+
 -- detect section lines
 local function is_section_begin(line)
+	local core = core_from_line(line)
+	-- "Title : ----- (marker)"
 	local marker = util.pesc(config.marker)
-	return line:match(marker .. " [_].*[_]")
+	return core:match("^%s*.-%s:%s*-+%s+" .. marker .. "%s*$") ~= nil
 end
 
 local function is_section_end(line)
+	local core = core_from_line(line)
+	-- "(marker) ----- : Title"
 	local marker = util.pesc(config.marker)
-	return line:match(marker .. " [$].*[$]")
+	return core:match("^%s*" .. marker .. "%s+-+%s:%s*.+%s*$") ~= nil
 end
 
 
@@ -72,10 +92,10 @@ local function get_sections()
 	---@param line string
 	---@return string
 	local function section_title(line)
+		local core = core_from_line(line)
 		local marker = util.pesc(config.marker)
-		-- matches: "<marker> _Title_"
-		local pat = marker .. " " .. util.pesc(start_type) .. "(.-)" .. util.pesc(start_type)
-		local title = line:match(pat)
+		-- extract "Title" from "Title : ----- (marker)"
+		local title = core:match("^%s*(.-)%s:%s*-+%s+" .. marker .. "%s*$")
 		if not title or title == "" then
 			return util.trim(line)
 		end

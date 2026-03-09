@@ -18,19 +18,19 @@ CONTENTS                                                   *sections-contents*
 
 sections.nvim creates visual "sections" in your files using language-aware
 comments. Each section is a block delimited by two boundary lines that contain
-an identifying marker and a title.
+the section title and a configurable marker string.
 
 Examples (default marker "(section)"):
 
 > C/C++:
-    // (section) _Title_ -------------------------------------- //
+    //  Title : ------------------------ (section) //
     //   body
-    // (section) $Title$ -------------------------------------- //
+    //  (section) ------------------------ : Title //
 
 > HTML:
-    <!-- (section) _Title_ ------------------------------------ -->
+    <!--  Title : ---------------------- (section) -->
       body
-    <!-- (section) $Title$ ------------------------------------ -->
+    <!--  (section) ---------------------- : Title -->
 
 The plugin uses &commentstring to build the boundaries, so it works in Lua,
 Python, C/C++, HTML, etc.

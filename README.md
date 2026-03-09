@@ -66,24 +66,23 @@ All keymaps can be overridden via `keymaps` in `setup`.
 
 ### Section format
 
-The plugin relies on the buffer's `commentstring` and a textual marker.  
-With the default marker `(section)` the boundaries look roughly like:
+The plugin relies on the buffer's `commentstring` to build section boundaries.
+With a C-style line comment (`// %s`) and the default marker `(section)` the
+boundaries look roughly like:
 
 ```c
-// (section) _Title_ ------------------------------ //
+//  Title : -------------------- (section) //
 //   body of the section
-// (section) $Title$ ------------------------------ //
+//  (section) -------------------- : Title //
 ```
 
 In HTML, the same section becomes:
 
 ```html
-<!-- (section) _Title_ ---------------------------- -->
+<!--  Title : ------------------ (section) -->
   body of the section
-<!-- (section) $Title$ ---------------------------- -->
+<!--  (section) ------------------ : Title -->
 ```
-
-The marker text is escaped when building the detection patterns, so it is safe to change it to something more unique.
 
 ### HTML and block comment behaviour
 
