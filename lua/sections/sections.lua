@@ -1,3 +1,7 @@
+local comment = require("sections.comment")
+local format = require("sections.format")
+local util = require("sections.util")
+
 local M = {}
 
 local start_type = "_"
@@ -8,43 +12,21 @@ local config = {
 	marker = "",
 }
 
+---Configure section behaviour (marker, width, etc.).
+---@param opts table?
 function M.setup(opts)
 	if opts then
 		config = vim.tbl_deep_extend("force", config, opts)
 	end
 end
 
--- get comment prefix from 'commentstring'
-local function get_comment_prefix()
-	local cs = vim.bo.commentstring
-
-	if not cs or cs == "" then
-		return "//"
-	end
-
-	local prefix = cs:match("^(.*)%%s")
-	if not prefix then
-		return "//"
-	end
-
-	prefix = prefix:gsub("%s+$", "")
-	return prefix
-end
-
-
--- build section line
+---Build a single section boundary line for the current buffer.
+---@param desc string
+---@param line_type string
+---@return string
 local function build_line(desc, line_type)
-	local prefix = get_comment_prefix()
-
-	local start = prefix .. " " .. config.marker .. " " .. line_type .. desc .. line_type .. " "
-	local ending = " " .. prefix
-
-	local dash_count = config.width - #start - #ending
-	if dash_count < 1 then
-		dash_count = 1
-	end
-
-	return start .. string.rep("-", dash_count) .. ending
+	local parts = comment.parts(0)
+	return format.boundary_line(config, parts, desc, line_type)
 end
 
 
@@ -68,11 +50,13 @@ end
 
 -- detect section lines
 local function is_section_begin(line)
-	return line:match(config.marker .. " [_].*[_]")
+	local marker = util.pesc(config.marker)
+	return line:match(marker .. " [_].*[_]")
 end
 
 local function is_section_end(line)
-	return line:match(config.marker .. " [$].*[$]")
+	local marker = util.pesc(config.marker)
+	return line:match(marker .. " [$].*[$]")
 end
 
 
