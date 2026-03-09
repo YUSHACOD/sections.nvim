@@ -11,20 +11,20 @@ local M = {}
 ---@param bufnr integer
 ---@return SectionsCommentParts
 function M.parts(bufnr)
-  local cs = vim.bo[bufnr].commentstring
-  if type(cs) ~= "string" or cs == "" then
-    return { left = "//", right = "" }
-  end
+	local cs = vim.bo[bufnr].commentstring
+	if type(cs) ~= "string" or cs == "" then
+		return { left = "//", right = "" }
+	end
 
-  local left, right = cs:match("^(.*)%%s(.*)$")
-  if not left then
-    return { left = "//", right = "" }
-  end
+	local left, right = cs:match("^(.*)%%s(.*)$")
+	if not left then
+		return { left = "//", right = "" }
+	end
 
-  left = util.trim(left)
-  right = util.trim(right or "")
+	left = util.trim(left)
+	right = util.trim(right or "")
 
-  return { left = left ~= "" and left or "//", right = right }
+	return { left = left ~= "" and left or "//", right = right }
 end
 
 return M

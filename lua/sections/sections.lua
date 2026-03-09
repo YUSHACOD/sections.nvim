@@ -185,7 +185,6 @@ function M.telescope()
 	}):find()
 end
 
-
 -- jump to section
 function M.jump()
 	local sections = get_sections()
