@@ -1,0 +1,166 @@
+*sections.txt*      sections.nvim: visual code sections
+
+Author:  you
+License: MIT
+
+==============================================================================
+CONTENTS                                                   *sections-contents*
+
+  1. Overview .................................................. |sections|
+  2. Installation ....................................... |sections-install|
+  3. Commands ........................................... |sections-commands|
+  4. Mappings ......................................... |sections-mappings|
+  5. Telescope ....................................... |sections-telescope|
+  6. Configuration ............................... |sections-configuration|
+
+==============================================================================
+1. OVERVIEW                                                      *sections*
+
+sections.nvim creates visual "sections" in your files using language-aware
+comments. Each section is a block delimited by two boundary lines that contain
+an identifying marker and a title.
+
+Examples (default marker "(section)"):
+
+> C/C++:
+    // (section) _Title_ -------------------------------------- //
+    //   body
+    // (section) $Title$ -------------------------------------- //
+
+> HTML:
+    <!-- (section) _Title_ ------------------------------------ -->
+      body
+    <!-- (section) $Title$ ------------------------------------ -->
+
+The plugin uses &commentstring to build the boundaries, so it works in Lua,
+Python, C/C++, HTML, etc.
+
+==============================================================================
+2. INSTALLATION                                           *sections-install*
+
+With a plugin manager like "lazy.nvim":
+
+>lua
+    {
+      "yourname/sections.nvim",
+      config = function()
+        require("sections").setup({
+          -- all options are optional; these are the defaults
+          marker = "(section)",
+          width  = 100,
+          keymaps = {
+            next = "]s",
+            prev = "[s",
+            ["end"] = "<leader>es",
+          },
+          textobjects     = true,
+          commands        = true,
+          wrap_navigation = false,
+        })
+      end,
+    }
+
+You can also add it to 'runtimepath' manually and call:
+
+>lua
+    require("sections").setup()
+
+==============================================================================
+3. COMMANDS                                             *sections-commands*
+
+All commands are available when |g:loaded_sections| is set by the plugin
+and `commands = true` in setup.
+
+                                                        *:SecCreate*
+:SecCreate [name]   Create a new section. With no [name] it prompts
+                    for the title.
+
+                                                        *:SecJump*
+:SecJump            Fuzzy-pick a section in the current buffer using
+                    |vim.ui.select()| and jump to it. This does not
+                    require any external dependencies.
+
+                                                        *:SecDelete*
+:SecDelete          Delete the section around the cursor, including
+                    both boundary lines and all lines in between.
+
+                                                        *:SecTelescope*
+:SecTelescope       Open a Telescope picker listing all sections in
+                    the current buffer and jump to the selected one.
+                    Requires |telescope.nvim|.
+
+==============================================================================
+4. MAPPINGS                                           *sections-mappings*
+
+By default, |sections.nvim| sets the following normal-mode mappings:
+
+    ]s              Jump to the next section start.
+    [s              Jump to the previous section start.
+    <leader>es      From a section start, jump to its end boundary.
+
+Textobjects (operator-pending / visual):
+
+    is              "inner section"   (between the two boundaries)
+    as              "around section"  (including the boundaries)
+
+All mappings can be disabled or changed by overriding the `keymaps` and
+`textobjects` options in |sections-configuration|.
+
+==============================================================================
+5. TELESCOPE                                         *sections-telescope*
+
+If you have |telescope.nvim| installed, sections.nvim exposes a small
+integration:
+
+                                                        *sections-telescope-cmd*
+    :SecTelescope   Opens a picker listing all section starts in the
+                    current buffer. Press <CR> on an entry to jump to
+                    that section.
+
+The implementation is optional: if Telescope is not installed,
+`:SecTelescope` prints a warning using |vim.notify()|.
+
+Example mapping:
+
+>lua
+    vim.keymap.set("n", "<leader>ss", "<cmd>SecTelescope<CR>",
+      { desc = "Sections picker" })
+
+==============================================================================
+6. CONFIGURATION                                 *sections-configuration*
+
+The plugin is configured via:
+
+>lua
+    require("sections").setup(opts)
+
+Options (with defaults):
+
+    marker        (string)  Marker embedded in the boundary lines.
+                            Default: "(section)".
+
+    width         (number)  Target visual width of the full boundary
+                            line. Values < 20 are clamped to 100.
+
+    keymaps       (table)   Table of navigation mappings:
+                              next : "]s"
+                              prev : "[s"
+                              end  : "<leader>es"
+
+    textobjects   (bool)    Enable "is" / "as" textobjects.
+                            Default: v:true.
+
+    commands      (bool)    Register user commands (:SecCreate,
+                            :SecJump, :SecDelete, :SecTelescope).
+                            Default: v:true.
+
+    wrap_navigation (bool)  Reserved for future wrap-around behaviour
+                            in next/prev navigation. Currently unused.
+
+Internals such as |sections.config|, |sections.comment|, |sections.format|
+and |sections.util| are considered private and may change. Rely on the
+public commands, mappings and setup options documented here.
+
+==============================================================================
+vim:tw=78:et:ft=help
+

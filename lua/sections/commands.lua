@@ -34,6 +34,16 @@ function M.setup()
 			desc = "Delete the section under cursor"
 		}
 	)
+
+	vim.api.nvim_create_user_command(
+		"SecTelescope",
+		function()
+			sec.telescope()
+		end,
+		{
+			desc = "Open Telescope picker for sections",
+		}
+	)
 end
 
 return M

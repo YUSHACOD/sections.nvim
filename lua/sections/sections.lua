@@ -61,21 +61,89 @@ end
 
 
 -- collect sections
+---Return all section starts in the current buffer.
+---@return {line:integer,text:string,title:string}[]
 local function get_sections()
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
 	local sections = {}
 
+	---Extract human-readable title from a boundary line.
+	---@param line string
+	---@return string
+	local function section_title(line)
+		local marker = util.pesc(config.marker)
+		-- matches: "<marker> _Title_"
+		local pat = marker .. " " .. util.pesc(start_type) .. "(.-)" .. util.pesc(start_type)
+		local title = line:match(pat)
+		if not title or title == "" then
+			return util.trim(line)
+		end
+		return util.trim(title)
+	end
+
 	for i, line in ipairs(lines) do
 		if is_section_begin(line) then
 			table.insert(sections, {
 				line = i,
-				text = line
+				text = line,
+				title = section_title(line),
 			})
 		end
 	end
 
 	return sections
+end
+
+---Telescope picker for sections (optional dependency).
+---Lists all section starts and jumps to the selected one.
+function M.telescope()
+	local ok, pickers = pcall(require, "telescope.pickers")
+	if not ok then
+		util.notify("telescope.nvim not found (required for :SecTelescope)", vim.log.levels.WARN)
+		return
+	end
+
+	local sections = get_sections()
+	if #sections == 0 then
+		util.notify("No sections found", vim.log.levels.INFO)
+		return
+	end
+
+	local finders = require("telescope.finders")
+	local conf = require("telescope.config").values
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	pickers.new({}, {
+		prompt_title = "Sections",
+		finder = finders.new_table({
+			results = sections,
+			entry_maker = function(entry)
+				return {
+					value = entry,
+					display = entry.title or entry.text,
+					ordinal = entry.title or entry.text,
+					lnum = entry.line,
+				}
+			end,
+		}),
+		sorter = conf.generic_sorter({}),
+		attach_mappings = function(prompt_bufnr, map)
+			local function goto_selection()
+				local selection = action_state.get_selected_entry()
+				actions.close(prompt_bufnr)
+				if not selection or not selection.value then
+					return
+				end
+				vim.api.nvim_win_set_cursor(0, { selection.value.line, 0 })
+			end
+
+			map("i", "<CR>", goto_selection)
+			map("n", "<CR>", goto_selection)
+			return true
+		end,
+	}):find()
 end
 
 
@@ -90,7 +158,7 @@ function M.jump()
 
 	local items = {}
 	for _, s in ipairs(sections) do
-		table.insert(items, s.text)
+		table.insert(items, s.title or s.text)
 	end
 
 	vim.ui.select(items, { prompt = "Jump to section" }, function(_, idx)
@@ -112,19 +180,6 @@ function M.jump_end()
 			return
 		end
 	end
-end
-
--- delete section under cursor
-function M.delete()
-	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
-	local line = vim.api.nvim_get_current_line()
-
-	if not is_section_begin(line) then
-		print("Not on a section line")
-		return
-	end
-
-	vim.api.nvim_buf_set_lines(0, line_nr - 1, line_nr, false, {})
 end
 
 function M.next_section()
@@ -203,6 +258,18 @@ function M.textobj_around()
 	vim.fn.setpos("'>", { 0, e, col, 0 })
 
 	vim.cmd("normal! gv")
+end
+
+-- delete section under cursor
+function M.delete()
+	local start_line, end_line = find_section_bounds()
+	if not start_line then
+		print("No section around cursor")
+		return
+	end
+
+	-- delete the entire section block, including boundaries
+	vim.api.nvim_buf_set_lines(0, start_line - 1, end_line, false, {})
 end
 
 return M

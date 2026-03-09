@@ -50,8 +50,9 @@ require("sections").setup({
 ### Commands
 
 - **`SecCreate [name]`**: Create a new section. With no argument, prompts for the name.
-- **`SecJump`**: Fuzzy‑pick a section and jump to it.
-- **`SecDelete`**: Delete the section boundary line under the cursor (current behaviour is preserved).
+- **`SecJump`**: Fuzzy‑pick a section using `vim.ui.select` and jump to it (no dependencies).
+- **`SecDelete`**: Delete the section under the cursor (full block, including boundaries).
+- **`SecTelescope`**: Open a Telescope picker of all sections and jump to the selected one (requires `nvim-telescope/telescope.nvim`).
 
 ### Keymaps (defaults)
 
@@ -103,6 +104,19 @@ The marker text is escaped when building the detection patterns, so it is safe t
 - **`textobjects`** (`boolean`): Enable `is` / `as` textobjects. Default: `true`.
 - **`commands`** (`boolean`): Register `:SecCreate`, `:SecJump`, `:SecDelete`. Default: `true`.
 - **`wrap_navigation`** (`boolean`): Reserved for future wrap‑around navigation; currently unused.
+
+### Telescope integration
+
+If you use Telescope, you can drive sections through a picker:
+
+- **Command**: `:SecTelescope` (registered when `commands = true`).
+- **Behaviour**: Lists all section starts in the current buffer; pressing `<CR>` jumps to the chosen section.
+
+Minimal example mapping:
+
+```lua
+vim.keymap.set("n", "<leader>ss", "<cmd>SecTelescope<CR>", { desc = "Sections picker" })
+```
 
 The internal helpers in `sections.config`, `sections.comment`, `sections.format`, and `sections.util` are considered private and may change, but the public behaviour described above is preserved.
 
