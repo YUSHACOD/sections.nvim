@@ -158,10 +158,6 @@ function M.telescope()
 	end
 
 	local sections = get_sections()
-	if #sections == 0 then
-		util.notify("No sections found", vim.log.levels.INFO)
-		return
-	end
 
 	local finders = require("telescope.finders")
 	local conf = require("telescope.config").values

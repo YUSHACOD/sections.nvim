@@ -18,7 +18,7 @@ Example with `lazy.nvim` while developing locally:
 
 ```lua
 {
-  dir = "~/dev/sections.nvim",
+  'YUSHACOD/sections.nvim',
   config = function()
     require("sections").setup({
       -- all options are optional; these are the defaults

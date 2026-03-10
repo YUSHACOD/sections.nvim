@@ -1,6 +1,6 @@
 *sections.txt*      sections.nvim: visual code sections
 
-Author:  Cursor
+Author:  YUSHACOD
 License: MIT
 
 ==============================================================================
@@ -43,7 +43,7 @@ With a plugin manager like "lazy.nvim":
 
 >lua
     {
-      "yourname/sections.nvim",
+      "YUSHACOD/sections.nvim",
       config = function()
         require("sections").setup({
           -- all options are optional; these are the defaults
